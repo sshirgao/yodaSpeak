@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import AVFoundation
 
 
 class YodaSpeakViewCOntroller: BaseYodaSpeak,UITextFieldDelegate {
@@ -103,13 +104,35 @@ class YodaSpeakViewCOntroller: BaseYodaSpeak,UITextFieldDelegate {
             let postdata = data
             let str_data = String(data: postdata!, encoding:NSASCIIStringEncoding)
             print("\(str_data)")
-            self.resp_label!.text=str_data
-            self.resp_label!.sizeToFit()
-            act_ind.stopAnimating()
-            act_ind.removeFromSuperview()
-            print("End of Completion block")
+            let completer:dispatch_block_t={[weak self] in
+                self!.resp_label!.text=str_data
+                self!.resp_label!.sizeToFit()
+                act_ind.stopAnimating()
+                act_ind.removeFromSuperview()
+                self?.yoda_speak(str_data!)
+                print("End of Completion block")
+            }
+            dispatch_async(dispatch_get_main_queue(),completer)
+            
         })
         task.resume()
+    }
+    
+    
+    func yoda_speak(str:String)
+    {
+        
+        
+        let string = str
+        let utterance = AVSpeechUtterance(string: string)
+        utterance.voice = AVSpeechSynthesisVoice(language: "en-au")
+
+        
+        let synthesizer = AVSpeechSynthesizer()
+        utterance.pitchMultiplier = 0.3;
+        
+        synthesizer.speakUtterance(utterance)
+
     }
     
     func strEncode(str:String)->String
